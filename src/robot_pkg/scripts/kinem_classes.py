@@ -1,10 +1,10 @@
-#!/usr/bin/python3 
+#!/usr/bin/python3
 
 from math import pi, cos, sin, atan2, atan, acos
 from numpy import zeros, matmul, deg2rad, array, ndarray, rad2deg
 from typing import Union, Any, Optional
 # from matplotlib.pyplot import plot, show, subplot, figure
-from rospy
+import rospy
 import RPi.GPIO as GPIO
 import board
 from adafruit_pca9685 import PCA9685
@@ -217,11 +217,44 @@ class reversPotate(data):
                        s4: Optional [int]=10,  s5: Optional [int]=135, 
                        q=array([0,0,0,0,0]),   l4: Optional [int]=125) -> None:
         super().__init__(a1, s1, l1, l2, s4, s5, q)
+        i2c = board.I2C()  # uses board.SCL and board.SDA
+        pca = PCA9685(i2c)
+        pca.frequency = 50
+        self.servo10 = servo.Servo(pca.channels[12], actuation_range = 180, min_pulse = 450, max_pulse=2750)
+        self.servo11 = servo.Servo(pca.channels[13], actuation_range = 180, min_pulse = 500, max_pulse=2550)
+        self.servo12 = servo.Servo(pca.channels[14], actuation_range = 180, min_pulse = 450, max_pulse=2750)
+        self.servo13 = servo.Servo(pca.channels[14], actuation_range = 180, min_pulse = 450, max_pulse=2750)
+        # self.servo14 = servo.Servo(pca.channels[15], actuation_range = 180, min_pulse = 450, max_pulse=2750)
+        # self.servo15 = servo.Servo(pca.channels[15], actuation_range = 180, min_pulse = 450, max_pulse=2750)
+        rospy.init_node('Servos')
+
+    def move(self):
+        print(self.slovar["q"][0], self.slovar["q"][1], self.slovar["q"][2], self.slovar["q"][3])
+        try: 
+            self.servo10.angle = rad2deg(self.slovar["q"][0])
+            print("1 Done")
+        except: pass
+        try: 
+            self.servo11.angle = rad2deg(self.slovar["q"][1])
+            print("2 Done")
+        except: pass
+        try: 
+            self.servo12.angle = rad2deg(self.slovar["q"][2])
+            print("3 Done")
+        except: pass
+        try: 
+            self.servo13.angle = rad2deg(self.slovar["q"][3])
+            print("4 Done")
+        except: pass
+        # self.servo14.angle = self.slovar["q"][4]
+        # self.servo15.angle = self.slovar["q"][5]
+
     def Euler2Dekart(self, angels):
         x = cos(angels[0])
         y = cos(angels[1])
         z = cos(angels[2])
         return [x,y,z]
+        
     def calculationOfPotate(self, x, y, z):
         k = (x**2+y**2)**0.5
         zr = z + self.slovar["l4"] - self.slovar["s1"]
@@ -234,39 +267,20 @@ class reversPotate(data):
         except:
             rospy.logerr("Attention! Singularity has been reached. Calculations stopped")
 def main():
-    while True:
-        motors = reversPotate()
-        x = float(input("Введите x от -0.9 до 1: "))
-        y = float(input("Введите y от -0.9 до 1: "))
-        z = float(input("Введите z от -0.9 до 1: "))
-        if (x < -0.9): x = -0.9
-        if (x > 1): x = 1
-        if (y < -0.9): y = -0.9
-        if (y > 1): y = 1
-        if (z < -0.9): z = -0.9
-        if (z > 1): z = 1
-            
-        motors.calculationOfPotate(x, y, z)
-        print(motors.slovar["q"])
+    motors = reversPotate()
+    # x = float(input("Введите x от -0.9 до 1: "))
+    # y = float(input("Введите y от -0.9 до 1: "))
+    # z = float(input("Введите z от -0.9 до 1: "))
+    # if (x < -0.9): x = -0.9
+    # if (x > 1): x = 1
+    # if (y < -0.9): y = -0.9
+    # if (y > 1): y = 1
+    # if (z < -0.9): z = -0.9
+    # if (z > 1): z = 1
         
-        i2c = board.I2C()  # uses board.SCL and board.SDA
-        pca = PCA9685(i2c)
-        pca.frequency = 50
-        servo10 = servo.Servo(pca.channels[10], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-        servo11 = servo.Servo(pca.channels[11], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-        servo12 = servo.Servo(pca.channels[12], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-        servo13 = servo.Servo(pca.channels[13], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-        servo14 = servo.Servo(pca.channels[14], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-        # servo15 = servo.Servo(pca.channels[15], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-        rospy.init_node('Servos')
-        # rospy.Subscriber("joy", Joy, self.callback_joy)
+    motors.calculationOfPotate(1, 1, 1)
+    motors.move()
+    # print(motors.slovar["q"])
         
-        servo10.angle = motors.slovar["q"][0]
-        servo11.angle = motors.slovar["q"][1]
-        servo12.angle = motors.slovar["q"][2]
-        servo13.angle = motors.slovar["q"][3]
-        servo14.angle = motors.slovar["q"][4]
-        # servo15.angle = motors.slovar["q"][5]
-    
 if __name__=="__main__":
     main()
