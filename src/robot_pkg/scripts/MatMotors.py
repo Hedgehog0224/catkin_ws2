@@ -22,13 +22,13 @@ class Motor():
         self.x_multi = x_multi    # Множитель по x
         self.y_multi = y_multi    # Множитель по y
 
-    def _single_front_potate(self, V, fid) -> None:
+    def _singleFrontPotate(self, V, fid) -> None:
         """
         Вычисление скорости колеса (экземпляра) из скоростей (x, y)
         """
         self.speed =  self.x_multi*V[0] + self.y_multi*V[1] + fid
 
-    def set_speed_shim(self, newSpeed) -> None:
+    def setSpeedShim(self, newSpeed) -> None:
         """
         Установка скорости вращения колеса для ШИМ-а
         """
@@ -51,7 +51,7 @@ class Route(Motor):
         self.pca.frequency = 100
         self.PredArrForMove = [0,0,0,0]
 
-    def _revers_potate(self, FuncOfAngel) -> None:
+    def _reversPotate(self, FuncOfAngel) -> None:
         """
         Расчёт скоростей (x, y) из скоростей колёс (a, b, c, d)
         """
@@ -59,14 +59,14 @@ class Route(Motor):
         y = (self.ListOfMotors[1] - self.ListOfMotors[3] - 2*Motor.L*FuncOfAngel)*0.5
         self.xy_speeds = [x, y]
 
-    def _front_potate(self, ModeOfAngles, FuncOfAngel) -> None:
+    def _frontPotate(self, ModeOfAngles, FuncOfAngel) -> None:
         """
         Расчёт скоростей колёс (экземпляров) из скоростей (x, y)
         """
         for i in self.ListOfMotors:
-            i._single_front_potate(self.xy_speeds, self.__differencial(ModeOfAngles, FuncOfAngel))
+            i._singleFrontPotate(self.xy_speeds, self.__differencial(ModeOfAngles, FuncOfAngel))
 
-    def set_speed(self, *args, ModeOfAngles = 0, FuncOfAngel = 0, turnOsSys = 0) -> list:
+    def setSpeed(self, *args, ModeOfAngles = 0, FuncOfAngel = 0, turnOsSys = 0) -> list:
         """
         Расчёт скорости колеса (экземпляра) из скоростей (x, y)
         """
@@ -75,7 +75,7 @@ class Route(Motor):
             args = self.potateOfSys(args[0],args[1],deg2rad(turnOsSys))
         
         self.xy_speeds = args
-        self._front_potate(ModeOfAngles, FuncOfAngel)
+        self._frontPotate(ModeOfAngles, FuncOfAngel)
         
         # Возвращает массив скоростей колёс
         return(self.getAllMotorsSpeeds())
@@ -137,7 +137,7 @@ class Route(Motor):
             
         for n, i in enumerate(self.ListOfMotors):
             try: 
-                i.set_speed_shim(int(hex(int(abs(SpeedsMotors[n]**4)*65535)), 16))
+                i.setSpeedShim(int(hex(int(abs(SpeedsMotors[n]**4)*65535)), 16))
             #     Speed[i] = int(hex(int(abs(arrOfSpeeds[i]/(arrOfSpeeds[i]-preArr[i]))*65535)), 16)
             #     Speed[i] = int(hex(int(abs(arrOfSpeeds[i]**2 + ((arrOfSpeeds[i]-preArr[i])*0))*65535)), 16)
             except: 
@@ -175,7 +175,7 @@ def main() -> None:
     listTest = [[0.5,0],[-0.5,0]]
     for i in listTest:
         joy = i
-        print(abcd.set_speed(joy[0], joy[1], turnOsSys=angle))
+        print(abcd.setSpeed(joy[0], joy[1], turnOsSys=angle))
 
 if __name__=="__main__":
     main()

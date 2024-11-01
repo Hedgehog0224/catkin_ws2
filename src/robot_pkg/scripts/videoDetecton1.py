@@ -17,8 +17,8 @@ class Camera():
       self.pub = rospy.Publisher('cameraData', servodata, queue_size=10)
       self.msg = servodata()
 
-      self.height = 640
-      self.weight = 480
+      self.height = 800
+      self.weight = 800
       self.colorBorders =[["red",  np.array([150,50,10]),    np.array([190,255,255])],
                           ["blue", np.array([100,100,0]),    np.array([125,255,255])],
                           ["yellow", np.array([20,165,100]), np.array([60,255,255])]]
@@ -34,6 +34,7 @@ class Camera():
       cv2.destroyAllWindows()
    def onTestTrackbar(self, val):
       pass
+
    def getCoordColorContours(self, contours):
       for c in contours:
          rect  = cv2.boundingRect(c)
@@ -72,6 +73,7 @@ class Camera():
       img = cv2.flip(img, 0)
       self.res = img.copy()
       return img
+
    def getHSVimg(self, img):
       return cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
    def getMask(self, color, img):
@@ -89,8 +91,15 @@ class Camera():
        
       contours, hierarchy = cv2.findContours(color_mask, 1, 2)
       try:
+         cnt = contours[0]
+         M = cv2.moments(cnt)
+
+         rect = cv2.minAreaRect(cnt)
+         box  = cv2.boxPoints(rect)
+         box  = np.int0(box)
          a1, a2, b1, b2 = self.getCoordColorContours(contours)
-         self.printRect(a1, a2, b1, b2)
+         #print((a1+a2)/2,(b1+b2)/2)
+         cv2.rectangle(res, (a1,a2), (b1,b2), (0,255,0), 2)
       except:
          pass
       return color_mask, res
@@ -114,7 +123,10 @@ class Camera():
       a1, a2, b1, b2 = 0, 0, 0, 0 
       try:
          a1, a2, b1, b2 = self.getCoonturs(contours)
-         self.printRect(a1,a2,b1,b2)
+         centerX = int((a1+b1)/2)
+         centerY = int((a2+b2)/2)
+         #print(a1, a2, b1, b2, sep=" ")
+         cv2.rectangle(self.res, (a1,a2), (b1,b2), (0,255,0), 2)
       except:
          pass
       dist, h, w = self.getDistation(a1, a2, b1, b2, heightConst)
@@ -124,11 +136,6 @@ class Camera():
                   1, (255,255,255))
       
       return color_mask, dist, np.array([centerX, centerY])
-   def printRect(self, a1, a2, b1, b2):
-      centerX = int((a1+b1)/2)
-      centerY = int((a2+b2)/2)
-      #print(a1, a2, b1, b2, sep=" ")
-      cv2.rectangle(self.res, (a1,a2), (b1,b2), (0,255,0), 2)
    def getRes(self):
       return self.res
    def getDistation(self, a1, a2, b1, b2, weightC):
@@ -142,6 +149,7 @@ class Camera():
       except:
          pass
       return distantion, height, weight
+
    def getCoonturs(self, contours):
       a1, a2, b1, b2 = self.getCoordColorContours(contours)
       return a1, a2, b1, b2
@@ -185,12 +193,13 @@ class Camera():
       #                     random.uniform(0,3.14),
       #                     0,0,0])
       return vectors
+
    # @staticmethod
-   def pubData(self, color):
+   def pubData(self):
       while not rospy.is_shutdown():
          # rospy.loginfo("Send loop")
          img = self.readData()
-         img_test, dist, centers = self.setMask(color ,img, 100)
+         img_test, dist, centers = self.setMask("yellow",img, 100)
          arr = self.paramOnDistationAndPos(dist, centers)
          if not(all(self.predData == arr)):
             self.msg.servo0 = int(arr[0]*100)
@@ -212,6 +221,6 @@ rospy.init_node('cameraNode')
 cam = Camera()
 # rospy.loginfo("cam create")
 # rospy.loginfo(rospy.is_shutdown())
-cam.pubData("yellow")
+cam.pubData()
 
 # cam.close()

@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="robot_pkg" type="man.py" name="manual"/>
+  <node pkg="robot_pkg" type="Servs.py" name="manipulator"/>
+</launch>

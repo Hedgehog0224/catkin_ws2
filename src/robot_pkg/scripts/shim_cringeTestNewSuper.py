@@ -46,8 +46,6 @@ class robotcl():
         Инициализация нод и подписчиков
         """
         rospy.init_node('MainNodeForRobot')
-        rospy.Subscriber("scan", LaserScan, self.callback_scan)
-        rospy.Subscriber("distance", Float32, self.callback_ultra_zd)
         rospy.Subscriber("Mode", xy, self.callback_mode)
     
     @staticmethod
@@ -60,15 +58,6 @@ class robotcl():
             robotcl.abcd.move([0, 0, 0, 0], [0, 0, 0, 0], robotcl.I2Cpins)
             rospy.loginfo_throttle(20, 'The mode in which the robot does not drive is selected: %s', robotcl.mode)
             
-        elif robotcl.mode == 3:
-            pass
-            # for i in range(2):
-                # robotcl.abcd.move([-1, -1, -1, -1], [0, 0, 0, 0], robotcl.I2Cpins)
-                # sleep(1)
-                # robotcl.abcd.move([1, 1, 1, 1], [0, 0, 0, 0], robotcl.I2Cpins)
-                # sleep(1)
-                # rospy.loginfo_throttle(20, 'This is the user mode: %s', robotcl.mode)
-
         elif robotcl.mode == 2:
             if robotcl.varStopAll:
                 robotcl.abcd.move(robotcl.abcd.setSpeed(1, 1), [0, 0, 0, 0], robotcl.I2Cpins)
@@ -121,7 +110,7 @@ class robotcl():
         """
         Обратная связь дальномера
         """
-        dataFloat = float(str(data)[6:-1])
+        dataFloat = data.data
         if dataFloat < 20.0:
             rospy.loginfo('Attention an obstacle has been detected (cm): %s', round(dataFloat,2))
             robotcl.varStopAll = True
@@ -136,7 +125,6 @@ class robotcl():
         robotcl.mode = data.mode
         robotcl.JoySpeed = [data.x, data.y]
         robotcl.JoyAngle = data.angle
-
 
 cringebot = robotcl()
 rospy.sleep(0.05)

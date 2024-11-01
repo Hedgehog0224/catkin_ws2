@@ -52,6 +52,8 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    xy.msg
    servodata.msg
+   Joysteack.msg
+   Speeds.msg
  )
 
 ## Generate services in the 'srv' folder
