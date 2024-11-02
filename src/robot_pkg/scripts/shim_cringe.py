@@ -20,7 +20,7 @@ if GPIO.getmode() == None:
     GPIO.setmode(GPIO.BOARD)  
 
 # Локальная библиотека для вычислений
-from MatMotors import Route, Motor
+from motorsClass import Route, Motor
 
 # Главный класс
 class robotcl():

@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 import rospy
-from robot_pkg.msg import xy
+from robot_pkg.msg import Joysteack
 from sensor_msgs.msg import Joy
 
 
 class chooseModeClass():
-  pubMode = rospy.Publisher('Mode', xy, queue_size=10)
+  pubMode = rospy.Publisher('modeData', Joysteack, queue_size=10)
   rospy.init_node('chooseMode')
   msg = xy()
   msg.x = 0

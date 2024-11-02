@@ -6,11 +6,9 @@ from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
 import time
 import rospy
-from robot_pkg.msg import servodata, xy
-from sensor_msgs.msg import Joy
+from robot_pkg.msg import Servodata
 from numpy import rad2deg
-
-from kinem_classes import potateKinem
+from kinemClasses import potateKinem
 
 class startServs():
   start = [0,0,0,0,0,0]
@@ -20,7 +18,8 @@ class startServs():
   angls = [0,0,0,0,0,0,0]    # Первый элемент - выбранный сервопривод. Остальные - углы сервоприводов.
   stTime = time.time()
   def __init__(self):
-    rospy.Subscriber("cameraData", servodata, startServs.callBack)
+    rospy.Subscriber("manipulatorData", Servodata, startServs.callBack)
+    rospy.init_node('servos')
     rospy.loginfo("INIT NODE")
     startServs.i2c = board.I2C()  # uses board.SCL and board.SDA
     # startServs.i2c1 = board.I2C()
@@ -29,10 +28,6 @@ class startServs():
     
     startServs.pca.frequency = 200
 
-    # print("PCA", startServs.pca.i2c_bus)
-    # print("PCA1", startServs.pca1.i2c_bus)
-    # print("I2C", startServs.i2c) 
-
     startServs.servo10 = servo.Servo(startServs.pca.channels[12], actuation_range = 180, min_pulse = 450, max_pulse=2750)
     startServs.servo11 = servo.Servo(startServs.pca.channels[13], actuation_range = 180, min_pulse = 500, max_pulse=2550)
     startServs.servo12 = servo.Servo(startServs.pca.channels[14], actuation_range = 180, min_pulse = 450, max_pulse=2750)
@@ -40,8 +35,6 @@ class startServs():
     startServs.servo14 = servo.Servo(startServs.pca.channels[0], actuation_range = 180, min_pulse = 450, max_pulse=2750)
     startServs.servo15 = servo.Servo(startServs.pca.channels[1], actuation_range = 180, min_pulse = 750, max_pulse=2250)
     # startServs.cameraServo = servo.Servo(startServs.pca1.channels[2], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-    rospy.init_node('Servos')
-    # rospy.Subscriber("joy", Joy, self.callback_joy)
 
   @staticmethod
   def move(angles) -> None:
@@ -56,9 +49,7 @@ class startServs():
 
   @staticmethod
   def updateposition(targetPos: float, currentPos: float, speed: float, delta: float):
-      # print("updateposition")
       err = targetPos - currentPos
-#      print("err:", err)
       if abs(err) > 0.01:
           thisDir = (speed * speed / startServs.maxAcceleration / 2.0 >= abs(err))
           speed += startServs.maxAcceleration * delta * (thisDir * -1 if thisDir else err)
@@ -71,42 +62,27 @@ class startServs():
     """
     Расчёт плавных скоростей сервы
     """
-    # rospy.loginfo("calculSpeeds::Target:%s", targetAngle)
-    # rospy.loginfo("calculSpeeds::Start:%s", startAngle)
-    # print("calculSpeeds")
     currentPos = [0,0,0,0,0,0]
     predCur = currentPos
     speed = [0,0,0,0,0,0]
     for i in [0, 1, 2, 3, 4, 5]:
-      # print(i, ":", startServs.updateposition(targetAngle[i], startAngle[i], 0, 1/frequency))
       currentPos[i], speed[i] = startServs.updateposition(targetAngle[i], startAngle[i], 0, 1/frequency)
     bSwich = 0
     while not bSwich:
-      # print("1 currentPos:", currentPos)
-      # print("speed:", speed)
       for i in [0, 1, 2, 3, 4, 5]:
         currentPos[i], speed[i] = startServs.updateposition(targetAngle[i], currentPos[i], speed[i], 1/frequency)
-      # print("2 currentPos:", currentPos)
-      # print("speed:", speed)
       bSwich = 1
       try:
         startServs.move(currentPos)
       except:
         rospy.logerr("ERROR!!! INVILID VOLUME (move)!!! %s", currentPos)
         break
-#      print("CurrentPos:", currentPos)
-      # print("TargetAngle", targetAngle)
-      # print("1 currentPos:", currentPos)
-      # print("1 targetPos:", targetAngle)
 
       for i in [0,1,2,3,4,5]:
-        # print(round(currentPos[i], 2), round(targetAngle[i],2))
         if abs(round(currentPos[i], 2) - round(targetAngle[i],2)) < 0.1: bSwich = 1 * bSwich
         else: bSwich = 0
-#      if predCur == currentPos: bSwich = 1
       predCur = currentPos
       time.sleep(1/frequency)
-#      if predCur == currentPos: bSwich = 1
     return currentPos
 
   @staticmethod
@@ -129,7 +105,6 @@ class startServs():
 
   @staticmethod
   def callBack(data):
-    # print("Cetch:", data)
     startServs.angls[0] = data.servo0
     startServs.angls[1] = data.servo1
     startServs.angls[2] = data.servo2
@@ -149,17 +124,15 @@ class startServs():
             abs(round(target[1], 2) ==  round(startServs.start[1], 2)) <= 0.1 and
             abs(round(target[2], 1) ==  round(startServs.start[2], 1)) <= 0.1):
           target = [abs(target[0]), abs(target[1]), abs(target[2]+0.5), 0,2,1]
-        # print("tekushee ", round(startServs.start[0], 1), round(startServs.start[1], 2), round(startServs.start[2], 1), sep=" ")
-        # print("target ", round(target[0], 1), round(target[1], 2), round(target[2], 1), sep=" ")
-        # [0,0,0,2.1,0, SXVAT]
-        # target = [0,0,0,0,0,0]
-        # target = [0, 0, 0, 2.1,1,3]
     else:
         target = [0,0,0,0,0,0]
     startServs.start = startServs.calculSpeeds(target, startServs.start)
 
-Ob = startServs()
+def main():
+  Ob = startServs()
 
-rospy.sleep(0.01)
-rospy.spin()
-  
+  rospy.sleep(0.01)
+  rospy.spin()
+
+if __name__ == "__main__":
+  main()

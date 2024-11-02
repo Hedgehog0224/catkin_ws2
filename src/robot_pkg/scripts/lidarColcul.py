@@ -5,30 +5,23 @@ from numpy import round
 from math import cos, sin, pi
 from time import sleep,time
 
-import RPi.GPIO as GPIO
-import board
-from adafruit_pca9685 import PCA9685
-
 import rospy
 from std_msgs.msg import Float32
 from sensor_msgs.msg import LaserScan
 from robot_pkg.msg import Speeds
 
-# Локальная библиотека для вычислений
-from MatMotors import Route, Motor
-
-# Главный класс
 class lidar():
-    # Переменные класса
     def __init__(self):
         """
         Инициализация нод и подписчиков
         """
-        rospy.init_node('NodeForLidar')
+        rospy.init_node('lidarColcul')
         rospy.Subscriber("scan", LaserScan, self.callbackScan)
         rospy.Subscriber("distance", Float32, self.callbackUltraZd)
-        pub = rospy.Publisher('LidarData', Speeds, queue_size=10)
-        msg = Speeds()
+        self.pub = rospy.Publisher('lidarData', Speeds, queue_size=10)
+        self.msg = Speeds()
+        self.stopAll = False # False = move; True = stop
+        rospy.loginfo("lidarColcul correct")
     
     def callbackScan(self, data) -> None:
         """
@@ -38,12 +31,10 @@ class lidar():
         size_nd = len(new_data)
         temp = min(new_data)
 
-        # stop
-        if temp > 0.6:
+        if (temp > 0.6) or (dataFloat < 20):
             self.msg.x = 0
             self.msg.y = 0
 
-        # move
         else:
             minArr = [i for i, j in enumerate(new_data) if j == temp]
             border = [min(minArr), max(minArr)]
@@ -55,17 +46,15 @@ class lidar():
             y = sin((sr/size_nd)*2*pi)
             self.msg.x = x
             self.msg.y = y
-        self.publish(msg)
+        self.pub.publish(self.msg)
+        rospy.loginfo_once("lidarData correct")
 
     def callbackUltraZd(self, data) -> None:
         """
         Обратная связь дальномера
         """
         dataFloat = data.data
-        if dataFloat < 20.0:
-            robotcl.varStopAll = True
-        else:
-            robotcl.varStopAll = False
+        rospy.loginfo_once("distance correct")
 
 lidarOb = lidar()
 rospy.sleep(0.05)

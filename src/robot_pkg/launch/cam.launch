@@ -5,5 +5,5 @@
   <!-- <node pkg="robot_pkg" type="shim_cringe.py" name="MainCringeNode"/> -->
   <!-- <node pkg="robot_pkg" type="chooseMode.py" name="chooseModeNode"/> -->
   <node pkg="robot_pkg" type="videoDetecton1.py" name="camera"/>
-  <node pkg="robot_pkg" type="Servs.py" name="manipulator"/>
+  <node pkg="robot_pkg" type="servs.py" name="manipulator"/>
 </launch>
