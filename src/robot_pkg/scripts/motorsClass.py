@@ -11,16 +11,16 @@ from rospy import logerr, loginfo, logwarn
 
 
 class Motor():
-    def __init__(self, x_multi, y_multi):
+    def __init__(self, x_multi, y_multi, center2Wheel = 19.09):
         GPIO.setwarnings(False)
         if GPIO.getmode() == None:
             GPIO.setmode(GPIO.BOARD)  
         
-        self.L = 19.09            # Расстояние от центра до колеса
+        self.center2Wheel = center2Wheel            # Расстояние от центра до колеса
         self.speed = 0            # Скорость вращения колеса
         self.speed_shim = 0       # Скорость вращения колеса (пересчёт для контроллера)
-        self.x_multi = x_multi    # Множитель по x
-        self.y_multi = y_multi    # Множитель по y
+        self.x_multi = x_multi
+        self.y_multi = y_multi
 
     def _singleFrontPotate(self, V, fid) -> None:
         """
@@ -55,8 +55,8 @@ class Route(Motor):
         """
         Расчёт скоростей (x, y) из скоростей колёс (a, b, c, d)
         """
-        x = (self.ListOfMotors[0] - self.ListOfMotors[2] - 2*Motor.L*FuncOfAngel)*0.5
-        y = (self.ListOfMotors[1] - self.ListOfMotors[3] - 2*Motor.L*FuncOfAngel)*0.5
+        x = (self.ListOfMotors[0] - self.ListOfMotors[2] - 2*Motor.center2Wheel*FuncOfAngel)*0.5
+        y = (self.ListOfMotors[1] - self.ListOfMotors[3] - 2*Motor.center2Wheel*FuncOfAngel)*0.5
         self.xy_speeds = [x, y]
 
     def _frontPotate(self, ModeOfAngles, FuncOfAngel) -> None:
