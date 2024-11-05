@@ -9,8 +9,7 @@ from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
 from time import sleep
 
-class potateKinem(
-):
+class potateKinem():
     def __init__(self, l0=185, l1=175, q=array([0,0,0,0,0])) -> None:
         self.l0 = l0
         self.l1 = l1
@@ -23,7 +22,7 @@ class potateKinem(
         return self.computePolar(r, theta, fi)
 
     def computePolar(self, r, theta, fi):
-        # print("Debug 1:", r, rad2deg(theta), rad2deg(fi))
+        print("Debug 1:", r, rad2deg(theta), rad2deg(fi))
         if r > self.l0 + self.l1:
             print("ERROR")
             return None
@@ -40,6 +39,7 @@ class potateKinem(
             try: 
                 angls[1] = pi-theta-acos((self.l0**2 - self.l1**2 + r**2)/(2*self.l0*r))
             except:
+
                 return None
             # print(rad2deg(acos((self.l0**2 + self.l1**2 - r**2)/(2*self.l0*self.l1))))
             try:

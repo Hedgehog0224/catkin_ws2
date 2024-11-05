@@ -21,31 +21,6 @@ class startServs():
     rospy.Subscriber("manipulatorData", Servodata, startServs.callBack)
     rospy.init_node('servos')
     rospy.loginfo("INIT NODE")
-    startServs.i2c = board.I2C()  # uses board.SCL and board.SDA
-    # startServs.i2c1 = board.I2C()
-    startServs.pca = PCA9685(startServs.i2c)
-    # startServs.pca1 = PCA9685(startServs.i2c, address = 0x41)
-    
-    startServs.pca.frequency = 200
-
-    startServs.servo10 = servo.Servo(startServs.pca.channels[12], actuation_range = 180, min_pulse = 450, max_pulse=2750)
-    startServs.servo11 = servo.Servo(startServs.pca.channels[13], actuation_range = 180, min_pulse = 500, max_pulse=2550)
-    startServs.servo12 = servo.Servo(startServs.pca.channels[14], actuation_range = 180, min_pulse = 450, max_pulse=2750)
-    startServs.servo13 = servo.Servo(startServs.pca.channels[15], actuation_range = 180, min_pulse = 450, max_pulse=2750)
-    startServs.servo14 = servo.Servo(startServs.pca.channels[0], actuation_range = 180, min_pulse = 450, max_pulse=2750)
-    startServs.servo15 = servo.Servo(startServs.pca.channels[1], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-    # startServs.cameraServo = servo.Servo(startServs.pca1.channels[2], actuation_range = 180, min_pulse = 750, max_pulse=2250)
-
-  @staticmethod
-  def move(angles) -> None:
-    print("MOVE ANG:", angles)
-    startServs.servo10.angle = rad2deg(angles[0])
-    startServs.servo11.angle = rad2deg(angles[1])
-    startServs.servo12.angle = rad2deg(angles[2])
-    startServs.servo13.angle = rad2deg(angles[3])
-    startServs.servo14.angle = rad2deg(angles[4])
-    startServs.servo15.angle = rad2deg(angles[5])
-    # startServs.cameraServo.angle = 180
 
   @staticmethod
   def updateposition(targetPos: float, currentPos: float, speed: float, delta: float):
@@ -109,13 +84,13 @@ class startServs():
     startServs.angls[1] = data.servo1
     startServs.angls[2] = data.servo2
     startServs.angls[3] = data.servo3
-    startServs.angls[4] = 0.5
-    startServs.angls[5] = 0.5
+    startServs.angls[4] = data.servo4
+    startServs.angls[5] = data.servo5
 
     ObCalul = potateKinem()
-    target = ([startServs.angls[0]/100,
-              startServs.angls[1]/100,
-              startServs.angls[2]/100])
+    target = ([startServs.angls[0],
+              startServs.angls[1],
+              startServs.angls[2]])
     if not (type(target) == None):
         target = ObCalul.computePolar(target[0], target[1], target[2])
         target = [abs(target[0]), abs(target[1]), abs(target[2]+0.5), 0,0,0]

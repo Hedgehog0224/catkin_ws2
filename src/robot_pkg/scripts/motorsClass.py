@@ -38,17 +38,6 @@ class Route(Motor):
     def __init__(self, a, b, c, d) -> None:
         self.ListOfMotors = [a, b, c, d]
         self.xy_speeds = [0, 0]
-        self.setUpI2C()
-
-    def setUpI2C(self) -> None:
-        """
-        Инициализация I2C
-        """
-        GPIO.setwarnings(False)
-        self.i2c = board.I2C()
-        self.pca = PCA9685(self.i2c)
-        self.pca.frequency = 100
-        self.PredArrForMove = [0,0,0,0]
 
     def _reversPotate(self, FuncOfAngel) -> None:
         """
@@ -120,41 +109,6 @@ class Route(Motor):
         xr = round(pole_len*cos(pole_phi+alfa), 2)
         yr = round(pole_len*sin(pole_phi+alfa), 2)
         return([xr, yr])
-            
-    def move(self, SpeedsMotors, preSpeedsMotors, numsPins) -> None:
-        """
-        Поиск максимальной скорости.
-        Перерасчёт  остальных под единицу.
-        Передача скоростей на моторы.
-        """
-        maxSpeed = max(max(SpeedsMotors), abs(min(SpeedsMotors)))
-        if maxSpeed: SpeedsMotors = array(SpeedsMotors)/maxSpeed
-            
-        for n, i in enumerate(self.ListOfMotors):
-            try: 
-                i.setSpeedShim(int(hex(int(abs(SpeedsMotors[n]**4)*65535)), 16))
-            #     Speed[i] = int(hex(int(abs(arrOfSpeeds[i]/(arrOfSpeeds[i]-preArr[i]))*65535)), 16)
-            #     Speed[i] = int(hex(int(abs(arrOfSpeeds[i]**2 + ((arrOfSpeeds[i]-preArr[i])*0))*65535)), 16)
-            except: 
-                logerr("ERROR OF MATH")
-                print(int(hex(int(abs(SpeedsMotors[n]**4)*65535)), 16))
-        
-        self.pca.channels[numsPins[0]].duty_cycle = self.ListOfMotors[0].speed_shim
-        self.pca.channels[numsPins[1]].duty_cycle = int(SpeedsMotors[0] > 0)*65535
-        self.pca.channels[numsPins[2]].duty_cycle = int(SpeedsMotors[0] < 0)*65535
-        
-        self.pca.channels[numsPins[3]].duty_cycle = self.ListOfMotors[1].speed_shim
-        self.pca.channels[numsPins[4]].duty_cycle = int(SpeedsMotors[1] > 0)*65535
-        self.pca.channels[numsPins[5]].duty_cycle = int(SpeedsMotors[1] < 0)*65535
-        
-        self.pca.channels[numsPins[6]].duty_cycle = self.ListOfMotors[2].speed_shim
-        self.pca.channels[numsPins[7]].duty_cycle = int(SpeedsMotors[2] > 0)*65535
-        self.pca.channels[numsPins[8]].duty_cycle = int(SpeedsMotors[2] < 0)*65535
-        
-        self.pca.channels[numsPins[9]].duty_cycle = self.ListOfMotors[3].speed_shim
-        self.pca.channels[numsPins[10]].duty_cycle = int(SpeedsMotors[3] > 0)*65535
-        self.pca.channels[numsPins[11]].duty_cycle = int(SpeedsMotors[3] < 0)*65535        
-
 
 def main() -> None:
     """
