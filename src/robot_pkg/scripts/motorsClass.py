@@ -16,9 +16,9 @@ class Motor():
         if GPIO.getmode() == None:
             GPIO.setmode(GPIO.BOARD)  
         
-        self.center2Wheel = center2Wheel            # Расстояние от центра до колеса
-        self.speed = 0            # Скорость вращения колеса
-        self.speed_shim = 0       # Скорость вращения колеса (пересчёт для контроллера)
+        self.center2Wheel = center2Wheel
+        self.speed = 0
+        self.speed_shim = 0
         self.x_multi = x_multi
         self.y_multi = y_multi
 
@@ -37,9 +37,9 @@ class Motor():
 
 class Route(Motor):
     def __init__(self, a, b, c, d) -> None:
-        self.ListOfMotors = [a, b, c, d]    # Список экземпляров класса Motor
-        self.xy_speeds = [0, 0]             # Скорости (x, y) для всего робота
-        self.setUpI2C()                     # Инициализация пинов I2C
+        self.ListOfMotors = [a, b, c, d]
+        self.xy_speeds = [0, 0]
+        self.setUpI2C()
 
     def setUpI2C(self) -> None:
         """
@@ -71,13 +71,11 @@ class Route(Motor):
         Расчёт скорости колеса (экземпляра) из скоростей (x, y)
         """
         if turnOsSys:
-            # Пересчёт скоростей (x, y), если нужен поворот оси
             args = self.potateOfSys(args[0],args[1],deg2rad(turnOsSys))
         
         self.xy_speeds = args
         self._frontPotate(ModeOfAngles, FuncOfAngel)
         
-        # Возвращает массив скоростей колёс
         return(self.getAllMotorsSpeeds())
 
     def getAllMotorsSpeeds(self) -> list:
@@ -130,8 +128,6 @@ class Route(Motor):
         Перерасчёт  остальных под единицу.
         Передача скоростей на моторы.
         """
-        # logwarn("Speeds: %s; PreSpeed: %s", SpeedsMotors, preSpeedsMotors)
-        # Передача скоростей моторам
         maxSpeed = max(max(SpeedsMotors), abs(min(SpeedsMotors)))
         if maxSpeed: SpeedsMotors = array(SpeedsMotors)/maxSpeed
             
