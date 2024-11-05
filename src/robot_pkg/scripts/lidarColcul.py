@@ -30,8 +30,10 @@ class lidar():
         new_data = data.ranges[0:int(len(data.ranges)*0.4)] + data.ranges[int(len(data.ranges)*0.7):int(len(data.ranges))]
         size_nd = len(new_data)
         temp = min(new_data)
-
-        if (temp > 0.6) or (dataFloat < 20):
+        if (dataFloat < 20):
+            self.msg.x = 1
+            self.msg.y = 1
+        elif (temp > 0.6):
             self.msg.x = 0
             self.msg.y = 0
 
