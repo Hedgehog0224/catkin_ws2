@@ -9,7 +9,6 @@ from adafruit_pca9685 import PCA9685
 
 from rospy import logerr, loginfo, logwarn
 
-
 class Motor():
     def __init__(self, x_multi, y_multi, center2Wheel = 19.09):
         GPIO.setwarnings(False)
